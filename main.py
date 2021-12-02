@@ -1,6 +1,9 @@
 import discord
 import time
 
+# next thing to do: training function with list of inputs and outputs
+# use ord() to get the ASCII value of a character
+
 class __text_neural_network():
     def __init__(self):
         first_time_executing = False

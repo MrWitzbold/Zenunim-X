@@ -1,5 +1,6 @@
 import discord
 import time
+import math
 
 # next thing to do: training function with list of inputs and outputs
 # use ord() to get the ASCII value of a character
@@ -63,14 +64,44 @@ class text_neural_network():
 
         self.weights = weights
         self.neurons = neurons
+        self.neuron_layers = neuron_layers
 
-    def save_state(self):
-        open("weights.txt", "w").write(str(self.weights))
-        open("neurons.txt", "w").write(str(self.neurons))
+        def save_state(self):
+            open("weights.txt", "w").write(str(self.weights))
+            open("neurons.txt", "w").write(str(self.neurons))
 
-    def train(self, inputs, outputs, iterations):
-        for i in range(0, iterations):
-            print("Iteration: " + str(i))
+        def get_neuron_layer(self, neuron):
+            for i in range(0, len(self.neuron_layers)):
+                if neuron in self.neuron_layers[i]:
+                    return i
+    
+        def is_connected(self, neuron1, neuron2):
+            if get_neuron_layer(neuron1) == get_neuron_layer(neuron2):
+                return False
+            if get_neuron_layer(neuron1) > get_neuron_layer(neuron2): # If it's ahead, then it needs to know if the other one is right behind it
+                if neuron2 in self.neuron_layers[get_neuron_layer(neuron1)-1]:
+                    return True
+            if get_neuron_layer(neuron1) < get_neuron_layer(neuron2): # If it's beind, then the other one needs to check if it's right in front of it
+                if neuron1 in self.neuron_layers[get_neuron_layer(neuron2)-1]:
+                    return True
+
+        def train(self, inputs, outputs, iterations):
+            def sigmoid(number):
+                result = number/(math.sqrt(1 + number**2))
+                return result
+            
+            def unsigmoid(x):
+                print("Getting value for: " + str(abs(x)))
+                result = abs(math.sqrt((0-x^2)/(x^2 - 1)))
+                return result
+
+            for i in range(0, iterations):
+                print("Iteration: " + str(i))
+            
+                # The values from the inputs to the first 40 neurons, we're gonna pass panually
+                # For the values of the next neurons, we'll use a function that says which neurons
+                # are connected to the current neuron
+                # and a function to get the connections' respective weights from the matrix
 
 
 

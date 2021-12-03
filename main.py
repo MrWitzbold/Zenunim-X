@@ -161,13 +161,15 @@ class text_neural_network():
                         neuron_value += neurons[neuron_index_2] * weights[neuron_index][neuron_index_2]
                     neurons[neuron_index] = sigmoid(neuron_value)
 
-            neural_output = ((unsigmoid(neurons[len(neurons)-1])) - 0.97375) * 1000000
+            neural_output = int(str(((unsigmoid(neurons[len(neurons)-1]))))[6] + str(((unsigmoid(neurons[len(neurons)-1]))))[7])
             print("Result before thing: " + str(((unsigmoid(neurons[len(neurons)-1])))))
             print("Result: " + str(neural_output))
             return neural_output
 
         self.train = train
         self.get_output = get_output
+
+neural_network_for_text = text_neural_network()
 
 intents = discord.Intents.default()
 intents.members = True
@@ -180,13 +182,13 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    global neural_network_for_text
     if str(message.content).split(" ")[0] == ";train": # takes iterations argument
         await message.channel.send("Starting training")
         print("Starting training")
         # idea: use some functions outside the whole discord thing to make the neural network
         # to update it, to write it to files etc
         # after you make some of the functions, start using them here to test
-        neural_network_for_text = text_neural_network()
         guild = message.channel.guild
         bans = await guild.bans()
         usernames = []
@@ -217,7 +219,6 @@ async def on_message(message):
         user_mention = str(message.content).split(" ")[1].replace("<@!", "").replace(">", "")
         username = str(message.guild.get_member(int(user_mention))).split("#")[0]
         await message.channel.send("Scanning " + username + "...")
-        neural_network_for_text = text_neural_network()
         await message.channel.send(str(neural_network_for_text.get_output(username)) + "% evil")
 
         

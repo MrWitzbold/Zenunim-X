@@ -182,14 +182,14 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    guild = message.channel.guild
     global neural_network_for_text
-    if str(message.content).split(" ")[0] == ";train": # takes iterations argument
+    if str(message.content).split(" ")[0] == ";train" and str(message.author.id) == "774498932696547329": # takes iterations argument
         await message.channel.send("Starting training")
         print("Starting training")
         # idea: use some functions outside the whole discord thing to make the neural network
         # to update it, to write it to files etc
         # after you make some of the functions, start using them here to test
-        guild = message.channel.guild
         bans = await guild.bans()
         usernames = []
         percentages = []
@@ -215,11 +215,42 @@ async def on_message(message):
         neural_network_for_text.train(usernames, percentages, 2)
         await message.channel.send("Finished training")
     
-    if str(message.content).split(" ")[0] == ";scan":
+    if str(message.content).split(" ")[0] == ";scan-user":
         user_mention = str(message.content).split(" ")[1].replace("<@!", "").replace(">", "")
         username = str(message.guild.get_member(int(user_mention))).split("#")[0]
         await message.channel.send("Scanning " + username + "...")
         await message.channel.send(str(neural_network_for_text.get_output(username)) + "% evil")
+
+    if str(message.content).split(" ")[0] == ";scan-all":
+        await message.channel.send("Scanning server wickedness...")
+        users = 0
+        percentages = 0
+        for member in guild.members:
+            username = str(member).split("#")[0]
+            percentages += neural_network_for_text.get_output(username)
+            users += 1
+        average = percentages/users
+        await message.channel.send("This server is " + str(average) + "% evil")
+
+    if str(message.content).split(" ")[0] == ";users-more-wicked-than":
+        await message.channel.send("Scanning users...")
+        wickedness = 60
+        wicked_users = 0
+        try:
+            wickedness = int(str(message.content).split(" ")[1])
+        except Exception as e:
+            await message.channel.send("Invalid number, using 60 instead, ya dummy")
+
+        for member in guild.members:
+            username = str(member).split("#")[0]
+            if neural_network_for_text.get_output(username) > wickedness:
+                wicked_users += 1
+
+        await message.channel.send("There are " + str(wicked_users) + " users more evil than " + str(wickedness) + "%")
+
+
+
+
 
         
         

@@ -50,11 +50,15 @@ class text_neural_network():
                 neurons.append(float(neurons_aux[i]))
     
             weight_matrix_lines = weights_file.replace(" ", "").replace("[", "").split("]")
+            print("\nweight matrix lines: " + str(weight_matrix_lines))
     
             for i in range(0, 820):
                 current_weight_line = weight_matrix_lines[i]
-                matrix_aux = current_weight_line.replace("[", "").replace("]", "").split(",")
-                matrix_line = []            
+                matrix_aux = current_weight_line.replace("[", "").replace("]", "").replace("'", "").split(",")
+                matrix_line = []
+                if len(matrix_aux) == 821:
+                    del matrix_aux[0]
+                print("\n\nMatrix aux of size " + str(len(matrix_aux)) + ": " + str(matrix_aux))
                 for i in range(0, len(matrix_aux)):
                     matrix_line.append(float(matrix_aux[i]))
                 weights.append(matrix_line)
@@ -114,7 +118,7 @@ class text_neural_network():
                         for neuron_index in neuron_layers[layer]:
                             neuron_value = 0
                             for neuron_index_2 in range(0, len(neuron_layers[layer-1])):
-                                neuron_value += neuron_layers[layer-1][neuron_index_2] * weights[neuron_index][neuron_index_2]
+                                neuron_value += neurons[neuron_index_2] * weights[neuron_index][neuron_index_2]
                             neurons[neuron_index] = sigmoid(neuron_value)
     
                     # Feed forward is over, now we're on the backpropagation
@@ -125,6 +129,7 @@ class text_neural_network():
     
                     error = ((neural_output - sigmoid(output))**2)/2
                     print("error = " + str(error))
+                    print("Iteration  " + str(j) + " out of " + str(len(inputs)))
                     print(weights)
                     learning_rate = 0.0001
                     for line in range(0, len(weights)):
@@ -148,7 +153,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    if str(message.content).split(" ")[0] == ";train":
+    if str(message.content).split(" ")[0] == ";train": # takes iterations argument
         print("Starting training")
         # idea: use some functions outside the whole discord thing to make the neural network
         # to update it, to write it to files etc
@@ -158,8 +163,12 @@ async def on_message(message):
         bans = await guild.bans()
         usernames = []
         percentages = []
+        iterations = round(int(str(message.content).split(" ")[1])/2)
         for ban in bans:
+            if iterations == 0:
+                break
             usernames.append(str(ban[1]).split("#")[0])
+            iterations -= 1
 
         for username in usernames:
             percentages.append(100)

@@ -140,7 +140,34 @@ class text_neural_network():
                     
                 save_state()
 
+        def get_output(input_):
+            def sigmoid(number):
+                result = number/(math.sqrt(1 + number**2))
+                return result
+            
+            def unsigmoid(x):
+                print("Getting value for: " + str(abs(x)))
+                result = abs(math.sqrt((0-x**2)/(x**2 - 1)))
+                return result
+
+            for neuron_index in range(0, len(neuron_layers[0])):
+                        neurons[neuron_index] = sigmoid(ord(input_[(neuron_index) % len(input_)])) # loop inside the input
+                        
+            for layer in range(1, len(neuron_layers)): # remember that the neuron layers simply contain the indexes of the neurons
+                print("layer: " + str(layer))
+                for neuron_index in neuron_layers[layer]:
+                    neuron_value = 0
+                    for neuron_index_2 in range(0, len(neuron_layers[layer-1])):
+                        neuron_value += neurons[neuron_index_2] * weights[neuron_index][neuron_index_2]
+                    neurons[neuron_index] = sigmoid(neuron_value)
+
+            neural_output = ((unsigmoid(neurons[len(neurons)-1])) - 0.97375) * 1000000
+            print("Result before thing: " + str(((unsigmoid(neurons[len(neurons)-1])))))
+            print("Result: " + str(neural_output))
+            return neural_output
+
         self.train = train
+        self.get_output = get_output
 
 intents = discord.Intents.default()
 intents.members = True
@@ -154,6 +181,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
     if str(message.content).split(" ")[0] == ";train": # takes iterations argument
+        await message.channel.send("Starting training")
         print("Starting training")
         # idea: use some functions outside the whole discord thing to make the neural network
         # to update it, to write it to files etc
@@ -182,8 +210,15 @@ async def on_message(message):
             member_name = str(member).split("#")[0]
             percentages.append(0)
             usernames.append(member_name)
-
         neural_network_for_text.train(usernames, percentages, 2)
+        await message.channel.send("Finished training")
+    
+    if str(message.content).split(" ")[0] == ";scan":
+        user_mention = str(message.content).split(" ")[1].replace("<@!", "").replace(">", "")
+        username = str(message.guild.get_member(int(user_mention))).split("#")[0]
+        await message.channel.send("Scanning " + username + "...")
+        neural_network_for_text = text_neural_network()
+        await message.channel.send(str(neural_network_for_text.get_output(username)) + "% evil")
 
         
         

@@ -1,6 +1,7 @@
 import discord
 import time
 import math
+import random
 
 # next thing to do: training function with list of inputs and outputs
 # use ord() to get the ASCII value of a character
@@ -16,10 +17,6 @@ class text_neural_network():
                 current_neurons.append(j + neurons_ever)
             neurons_ever += layer
             neuron_layers.append(current_neurons)
-
-        print("Neuron layers: " + str(neuron_layers))
-        print("Amount of layers: " + str(len(neuron_layers)))
-        print("Neurons ever: " + str(neurons_ever))
 
         first_time_executing = False
         weights_file = 0
@@ -46,7 +43,7 @@ class text_neural_network():
                 weights.append([])
             for i in range(0, len(weights)):
                 for i in range(0, 820):
-                    weights[i].append(0.1)
+                    weights[i].append((random.randint(0, 99)/100))
         else:
             neurons_aux = neurons_file.replace(" ", "").replace("[", "").replace("]", "").split(",")
             for i in range(0, len(neurons_aux)):
@@ -62,13 +59,13 @@ class text_neural_network():
                     matrix_line.append(float(matrix_aux[i]))
                 weights.append(matrix_line)
 
-        self.weights = weights
-        self.neurons = neurons
-        self.neuron_layers = neuron_layers
-
-        def save_state(self):
-            open("weights.txt", "w").write(str(self.weights))
-            open("neurons.txt", "w").write(str(self.neurons))
+        def save_state():
+            file1 = open("weights.txt", "w")
+            file1.write(str(weights))
+            file2 = open("neurons.txt", "w")
+            file2.write(str(neurons))
+            file1.close()
+            file2.close()
 
         def get_neuron_layer(self, neuron):
             for i in range(0, len(self.neuron_layers)):
@@ -85,11 +82,7 @@ class text_neural_network():
                 if neuron1 in self.neuron_layers[get_neuron_layer(neuron2)-1]:
                     return True
 
-        def train(self, inputs, outputs, iterations):
-            neurons = self.neurons
-            weights = self.weights
-            neuron_layers = self.neuron_layers
-
+        def train(inputs, outputs, iterations):
             def sigmoid(number):
                 result = number/(math.sqrt(1 + number**2))
                 return result
@@ -113,46 +106,41 @@ class text_neural_network():
     
                     # First we'll pass the input values to the first 40 neurons
     
-                    for neuron_index in range(0, len(neurons[0])):
-                        neurons[0][neuron_index] = sigmoid(ord(input_[(neuron_index) % len(input_)])) # loop inside the input
+                    for neuron_index in range(0, len(neuron_layers[0])):
+                        neurons[neuron_index] = sigmoid(ord(input_[(neuron_index) % len(input_)])) # loop inside the input
                         
-                    print("Initial neurons: " + str(neurons[0]))
-    
                     for layer in range(1, len(neuron_layers)): # remember that the neuron layers simply contain the indexes of the neurons
-                        for neuron_index in range(0, len(neuron_layers[layer])):
+                        print("layer: " + str(layer))
+                        for neuron_index in neuron_layers[layer]:
                             neuron_value = 0
                             for neuron_index_2 in range(0, len(neuron_layers[layer-1])):
-                                neuron_value += neurons[layer-1][neuron_index_2] * weights[neuron_index][neuron_index_2]
-                            neurons[layer][neuron_index] = neuron_value
-                    
-                    print("Trained neurons: " + str(neurons))
+                                neuron_value += neuron_layers[layer-1][neuron_index_2] * weights[neuron_index][neuron_index_2]
+                            neurons[neuron_index] = sigmoid(neuron_value)
     
                     # Feed forward is over, now we're on the backpropagation
     
                     # First we'll calculate the error of the output layer
     
-                    neural_output = neurons[len(neurons)]
+                    neural_output = neurons[len(neurons)-1]
     
                     error = ((neural_output - sigmoid(output))**2)/2
-
+                    print("error = " + str(error))
+                    print(weights)
                     learning_rate = 0.0001
-
                     for line in range(0, len(weights)):
                         for column in range(0, len(weights[line])):
-                            weights[line][column] -= weights[line][column] - learning_rate*(error/weights[line][column])
+                            if weights[line][column] == 0:
+                                weights[line][column] = 0.1
+                            weights[line][column] = weights[line][column] - learning_rate*(error/weights[line][column])
                     
-                    save_state()
+                save_state()
 
+        self.train = train
 
-                
+intents = discord.Intents.default()
+intents.members = True
 
-
-
-
-
-
-
-client = discord.Client()
+client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
@@ -166,6 +154,29 @@ async def on_message(message):
         # to update it, to write it to files etc
         # after you make some of the functions, start using them here to test
         neural_network_for_text = text_neural_network()
+        guild = message.channel.guild
+        bans = await guild.bans()
+        usernames = []
+        percentages = []
+        for ban in bans:
+            usernames.append(str(ban[1]).split("#")[0])
+
+        for username in usernames:
+            percentages.append(100)
+
+        amount_of_users = len(usernames)
+        iterations_ = 0
+        for member in guild.members:
+            iterations_ += 1
+            if iterations_ == amount_of_users:
+                break
+            member_name = str(member).split("#")[0]
+            percentages.append(0)
+            usernames.append(member_name)
+
+        neural_network_for_text.train(usernames, percentages, 2)
+
+        
         
 
 token = open("token.txt", "r").read()

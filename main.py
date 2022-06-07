@@ -20,8 +20,16 @@ def validate_key(key_in_numbers):
         if (number % 2 == 0):
             sum_2 += number*2 + 1
     
-    if (sum_2 % 3 == 0):
-        return True    
+    if (sum_2 % 3 != 0):
+        return False
+
+    sum_3 = 0
+    for number in key_in_numbers:
+        if (number % 2 != 0):
+            sum_3 += number*3 + 7
+
+    if (sum_3 % 5 == 0):
+        return True
 
 class text_neural_network():
     def __init__(self):
@@ -265,7 +273,7 @@ async def on_message(message):
 
         await message.channel.send("There are " + str(wicked_users) + " users more evil than " + str(wickedness) + "%")
 
-    if str(message.content).lower() == ";generate-key":
+    if str(message.content).lower() == ";generate-key" and str(message.author.id) in open("whitelist.txt").read().split("\n"):
         ascii_numbers = []
 
         for i in range(33, 94):
@@ -304,7 +312,7 @@ async def on_message(message):
                 char_number += 1
                 print("Generated " + chr(random_char))
         
-        await message.channel.send(key_in_chars)
+        await message.channel.send("```" + key_in_chars + "```")
 
 
 

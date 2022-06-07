@@ -6,6 +6,23 @@ import random
 # next thing to do: training function with list of inputs and outputs
 # use ord() to get the ASCII value of a character
 
+def validate_key(key_in_numbers):
+    sum = 0
+    for number in key_in_numbers:
+        sum += number
+    
+    if (sum % 2 == 0):
+        return False
+
+    sum_2 = 0
+
+    for number in key_in_numbers:
+        if (number % 2 == 0):
+            sum_2 += number*2 + 1
+    
+    if (sum_2 % 3 == 0):
+        return True    
+
 class text_neural_network():
     def __init__(self):
         neuron_layers = []
@@ -247,6 +264,49 @@ async def on_message(message):
                 wicked_users += 1
 
         await message.channel.send("There are " + str(wicked_users) + " users more evil than " + str(wickedness) + "%")
+
+    if str(message.content).lower() == ";generate-key":
+        ascii_numbers = []
+
+        for i in range(33, 94):
+            ascii_numbers.append(i)
+
+        for i in range(97, 126):
+            ascii_numbers.append(i)
+
+        characters = []
+
+        for number in ascii_numbers:
+            characters.append(chr(number))
+
+        print(ascii_numbers)
+        print(characters)
+
+        key_in_numbers = []
+        key_in_chars = ""
+        char_number = 0
+
+        while validate_key(key_in_numbers) == False:
+            key_in_numbers = []
+            key_in_chars = ""
+            char_number = 0
+            while char_number < 200:
+                coin_flip = random.randint(0, 2)
+                random_char = 0
+
+                if coin_flip == 0:
+                    random_char = random.randint(33, 94)
+                else:
+                    random_char = random.randint(97, 126)
+            
+                key_in_numbers.append(random_char)
+                key_in_chars += chr(random_char)
+                char_number += 1
+                print("Generated " + chr(random_char))
+        
+        await message.channel.send(key_in_chars)
+
+
 
 
 
